@@ -10,6 +10,7 @@
 #include <IRremote.h>
 
 IRsend irsend;
+void sendString(unsigned char* str, int len);
 
 void setup()
 {
@@ -18,11 +19,27 @@ void setup()
 
 void loop() {
   int khz = 38; // 38kHz carrier frequency for the NEC protocol
-  
-  unsigned int irSignal[] = {9000, 1025, 1075, 1125, 1175, 1225, 1275}; //AnalysIR Batch Export (IRremote) - RAW
-  
-  irsend.sendRaw(irSignal, sizeof(irSignal) / sizeof(irSignal[0]), khz); //Note the approach used to automatically calculate the size of the array.  delay(100); //5 second delay between each signal burst
+
+  irsend.sendSony(1145141919, 32);
 
   delay(1000);
+}
+
+void sendString(unsigned char* str, int len)
+{
+  unsigned int signal[len+1];
+  signal[0] = 8000;
+  for(int i = 0; i < len; i++) {
+    signal[i+1] = 150+(str[i]-'a')*USECPERTICK*2;
+  }
+    
+  Serial.print("Sending signal: ");
+  for(int i = 0; i < len+1; i++) {
+    Serial.print(signal[i]);
+    Serial.print(" ");
+  }
+  Serial.println(" ");
+  
+  irsend.sendRaw(signal, len+1, 38);
 }
 

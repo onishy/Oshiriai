@@ -1,91 +1,178 @@
-/*
-* IRremote: IRrecvDump - dump details of IR codes with IRrecv
-* An IR detector/demodulator must be connected to the input RECV_PIN.
-* Version 0.1 July, 2009
-* Copyright 2009 Ken Shirriff
-* http://arcfn.com
-* JVC and Panasonic protocol added by Kristian Lauszus (Thanks to zenwheel and other people at the original blog post)
-* LG added by Darryl Smith (based on the JVC protocol)
-*/
- 
+//------------------------------------------------------------------------------
+// Include the IRremote library header
+//
 #include <IRremote.h>
- 
-int RECV_PIN = 11;
- 
-IRrecv irrecv(RECV_PIN);
- 
-decode_results results;
- 
-void setup()
+
+//------------------------------------------------------------------------------
+// Tell IRremote which Arduino pin is connected to the IR Receiver (TSOP4838)
+//
+int recvPin = 11;
+IRrecv irrecv(recvPin);
+
+//+=============================================================================
+// Configure the Arduino
+//
+void  setup ( )
 {
-Serial.begin(9600);
-irrecv.enableIRIn(); // Start the receiver
+  Serial.begin(9600);   // Status message will be sent to PC at 9600 baud
+  irrecv.enableIRIn();  // Start the receiver
 }
- 
-// Dumps out the decode_results structure.
-// Call this after IRrecv::decode()
-// void * to work around compiler issue
-//void dump(void *v) {
-// decode_results *results = (decode_results *)v
-void dump(decode_results *results) {
-int count = results->rawlen;
-if (results->decode_type == UNKNOWN) {
-Serial.print("Unknown encoding: ");
+
+//+=============================================================================
+// Display IR code
+//
+void  ircode (decode_results *results)
+{
+  // Panasonic has an Address
+  if (results->decode_type == PANASONIC) {
+    Serial.print(results->address, HEX);
+    Serial.print(":");
+  }
+
+  // Print Code
+  Serial.print(results->value, DEC);
 }
-else if (results->decode_type == NEC) {
-Serial.print("Decoded NEC: ");
+
+//+=============================================================================
+// Display encoding type
+//
+void  encoding (decode_results *results)
+{
+  switch (results->decode_type) {
+    default:
+    case UNKNOWN:      Serial.print("UNKNOWN");       break ;
+    case NEC:          Serial.print("NEC");           break ;
+    case SONY:         Serial.print("SONY");          break ;
+    case RC5:          Serial.print("RC5");           break ;
+    case RC6:          Serial.print("RC6");           break ;
+    case DISH:         Serial.print("DISH");          break ;
+    case SHARP:        Serial.print("SHARP");         break ;
+    case JVC:          Serial.print("JVC");           break ;
+    case SANYO:        Serial.print("SANYO");         break ;
+    case MITSUBISHI:   Serial.print("MITSUBISHI");    break ;
+    case SAMSUNG:      Serial.print("SAMSUNG");       break ;
+    case LG:           Serial.print("LG");            break ;
+    case WHYNTER:      Serial.print("WHYNTER");       break ;
+    case AIWA_RC_T501: Serial.print("AIWA_RC_T501");  break ;
+    case PANASONIC:    Serial.print("PANASONIC");     break ;
+    case DENON:        Serial.print("Denon");         break ;
+  }
 }
-else if (results->decode_type == SONY) {
-Serial.print("Decoded SONY: ");
+
+//+=============================================================================
+// Dump out the decode_results structure.
+//
+void  dumpInfo (decode_results *results)
+{
+  // Check if the buffer overflowed
+  if (results->overflow) {
+    Serial.println("IR code too long. Edit IRremoteInt.h and increase RAWLEN");
+    return;
+  }
+
+  // Show Encoding standard
+  Serial.print("Encoding  : ");
+  encoding(results);
+  Serial.println("");
+
+  // Show Code & length
+  Serial.print("Code      : ");
+  ircode(results);
+  Serial.print(" (");
+  Serial.print(results->bits, DEC);
+  Serial.println(" bits)");
 }
-else if (results->decode_type == RC5) {
-Serial.print("Decoded RC5: ");
+
+//+=============================================================================
+// Dump out the decode_results structure.
+//
+void  dumpRaw (decode_results *results)
+{
+  // Print Raw data
+  Serial.print("Timing[");
+  Serial.print(results->rawlen-1, DEC);
+  Serial.println("]: ");
+
+  for (int i = 1;  i < results->rawlen;  i++) {
+    unsigned long  x = results->rawbuf[i] * USECPERTICK;
+    if (!(i & 1)) {  // even
+      Serial.print("-");
+      if (x < 1000)  Serial.print(" ") ;
+      if (x < 100)   Serial.print(" ") ;
+      Serial.print(x, DEC);
+    } else {  // odd
+      Serial.print("     ");
+      Serial.print("+");
+      if (x < 1000)  Serial.print(" ") ;
+      if (x < 100)   Serial.print(" ") ;
+      Serial.print(x, DEC);
+      if (i < results->rawlen-1) Serial.print(", "); //',' not needed for last one
+    }
+    if (!(i % 8))  Serial.println("");
+  }
+  Serial.println("");                    // Newline
 }
-else if (results->decode_type == RC6) {
-Serial.print("Decoded RC6: ");
+
+//+=============================================================================
+// Dump out the decode_results structure.
+//
+void  dumpCode (decode_results *results)
+{
+  // Start declaration
+  Serial.print("unsigned int  ");          // variable type
+  Serial.print("rawData[");                // array name
+  Serial.print(results->rawlen - 1, DEC);  // array size
+  Serial.print("] = {");                   // Start declaration
+
+  // Dump data
+  for (int i = 1;  i < results->rawlen;  i++) {
+    Serial.print(results->rawbuf[i] * USECPERTICK, DEC);
+    if ( i < results->rawlen-1 ) Serial.print(","); // ',' not needed on last one
+    if (!(i & 1))  Serial.print(" ");
+  }
+
+  // End declaration
+  Serial.print("};");  // 
+
+  // Comment
+  Serial.print("  // ");
+  encoding(results);
+  Serial.print(" ");
+  ircode(results);
+
+  // Newline
+  Serial.println("");
+
+  // Now dump "known" codes
+  if (results->decode_type != UNKNOWN) {
+
+    // Some protocols have an address
+    if (results->decode_type == PANASONIC) {
+      Serial.print("unsigned int  addr = 0x");
+      Serial.print(results->address, HEX);
+      Serial.println(";");
+    }
+
+    // All protocols have data
+    Serial.print("unsigned int  data = 0x");
+    Serial.print(results->value, HEX);
+    Serial.println(";");
+  }
 }
-else if (results->decode_type == PANASONIC) { 
-Serial.print("Decoded PANASONIC - Address: ");
-//Serial.print(results->panasonicAddress,HEX);
-Serial.print(" Value: ");
+
+//+=============================================================================
+// The repeating section of the code
+//
+void  loop ( )
+{
+  decode_results  results;        // Somewhere to store the results
+
+  if (irrecv.decode(&results)) {  // Grab an IR code
+    dumpInfo(&results);           // Output the results
+    dumpRaw(&results);            // Output the results in RAW format
+    dumpCode(&results);           // Output the results as source code
+    Serial.println("");           // Blank line between entries
+    irrecv.resume();              // Prepare for the next value
+  }
 }
-else if (results->decode_type == LG) {
-Serial.print("Decoded LG: ");
-}
-else if (results->decode_type == JVC) {
-Serial.print("Decoded JVC: ");
- 
-}
-else if (results->decode_type == AIWA_RC_T501) {
-Serial.print("Decoded AIWA RC T501: ");
-}
-else if (results->decode_type == WHYNTER) {
-Serial.print("Decoded Whynter: ");
-}
-Serial.print(results->value, HEX);
-Serial.print(" (");
-Serial.print(results->bits, DEC);
-Serial.println(" bits)");
-Serial.print("Raw (");
-Serial.print(count, DEC);
-Serial.print("): ");
- 
-for (int i = 0; i < count; i++) {
-if ((i % 2) == 1) {
-Serial.print(results->rawbuf[i]*USECPERTICK, DEC);
-}
-else {
-Serial.print(-(int)results->rawbuf[i]*USECPERTICK, DEC);
-}
-Serial.print(" ");
-}
-Serial.println("");
-}
- 
-void loop() {
-if (irrecv.decode(&results)) {
-Serial.println(results.value, HEX);
-dump(&results);
-irrecv.resume(); // Receive the next value
-}
-}
+
