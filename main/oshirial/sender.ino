@@ -9,22 +9,6 @@
 
 #include <IRremote.h>
 
-IRsend irsend;
-void sendString(unsigned char* str, int len);
-
-void setup()
-{
-  Serial.begin(9600);
-}
-
-void loop() {
-  int khz = 38; // 38kHz carrier frequency for the NEC protocol
-
-  irsend.sendSony(1145141919, 32);
-
-  delay(1000);
-}
-
 void sendString(unsigned char* str, int len)
 {
   unsigned char *data_char = (unsigned char*)calloc(sizeof(unsigned char), len);

@@ -3,21 +3,6 @@
 //
 #include <IRremote.h>
 
-//------------------------------------------------------------------------------
-// Tell IRremote which Arduino pin is connected to the IR Receiver (TSOP4838)
-//
-int recvPin = 11;
-IRrecv irrecv(recvPin);
-
-//+=============================================================================
-// Configure the Arduino
-//
-void  setup ( )
-{
-  Serial.begin(9600);   // Status message will be sent to PC at 9600 baud
-  irrecv.enableIRIn();  // Start the receiver
-}
-
 //+=============================================================================
 // Display IR code
 //
@@ -176,23 +161,8 @@ int decodeString(unsigned long* signal, unsigned long** decoded, int *len)
   for(int j = 0; j < *len; j++) {
     (*decoded)[j] = temp[j];
   }
+
+  free(data_raw);
   
   return *len;
 }
-
-//+=============================================================================
-// The repeating section of the code
-//
-void  loop ( )
-{
-  decode_results  results;        // Somewhere to store the results
-
-  if (irrecv.decode(&results)) {  // Grab an IR code
-    dumpInfo(&results);           // Output the results
-    dumpRaw(&results);            // Output the results in RAW format
-    dumpCode(&results);           // Output the results as source code
-    Serial.println("");           // Blank line between entries
-    irrecv.resume();              // Prepare for the next value
-  }
-}
-
