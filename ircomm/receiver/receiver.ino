@@ -160,6 +160,28 @@ void  dumpCode (decode_results *results)
   }
 }
 
+int decodeString(unsigned long* signal, unsigned long** decoded, int *len)
+{
+  unsigned long *data_raw = (unsigned long*)calloc(100, sizeof(unsigned long));
+  unsigned char *temp = (unsigned char*)data_raw;
+  int i = 0;
+  
+  while(temp[i] < '{' && i < 100) { i++; }
+
+  if(i == 100) {
+    return -1;   
+  }
+  *len = i;
+  *decoded = (unsigned long*) calloc(*len, sizeof(unsigned long));
+  for(int j = 0; j < *len; j++) {
+    (*decoded)[j] = temp[j];
+  }
+
+  free(data_raw);
+  
+  return *len;
+}
+
 //+=============================================================================
 // The repeating section of the code
 //
