@@ -1,4 +1,9 @@
 #include <IRremote.h>
+#include <SoftwareSerial.h>
+#include <XBee.h>
+
+#define rxPin 6
+#define txPin 7
 
 // wink detect
 int sensorPin = A0;    // select the input pin for the Photoreflector
@@ -15,9 +20,19 @@ int khz = 38; // 38kHz carrier frequency for the NEC protocol
 int recvPin = 11;
 IRrecv irrecv(recvPin);
 
+// XBee
+// XBee xbee = XBee();
+
+// SoftwareSerial
+SoftwareSerial xbee =  SoftwareSerial(rxPin, txPin);
+
 void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
+  pinMode(rxPin, INPUT);
+  pinMode(txPin, OUTPUT);
+  xbee.begin(9600);
+  // xbee.setSerial(xbee);
   irrecv.enableIRIn();  // Start the receiver
 }
 
@@ -26,6 +41,13 @@ unsigned long prev_time = 0;
 void loop() {
   // Receive first
   decode_results  results;        // Somewhere to store the results
+  char c;
+  while(xbee.available())
+  {
+    c=char(xbee.read());
+    delay(1);
+    Serial.print(c);
+  }
 
   while (irrecv.decode(&results)) {  // Grab an IR code
     // dumpInfo(&results);           // Output the results
@@ -42,7 +64,7 @@ void loop() {
     sensorValueIn = analogRead(sensorPin);  // put the value from the sensor
     int diff = sensorValueIn - prev_sensorValueIn;
 //    Serial.println(diff);   // show the sensor's value on the terminal
-  
+
     if(diff > threshold){
       // Serial.println("Wink detected!");
       for(int i = 0; i < 5; i++) {
