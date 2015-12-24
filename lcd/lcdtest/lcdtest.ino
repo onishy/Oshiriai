@@ -15,24 +15,31 @@ IRrecv irrecv(recvPin);
 void displayWeatherData(unsigned long data)
 {
   int type = data / 1000;
-  int temp = (data % 1000) / 10.0;
+  float temp = (data % 1000) / 10.0;
 
   String typeStr;
   switch(type) {
-    case 0: typeStr = "Sunny"; break;
-    case 1: typeStr = "Cloudy"; break;
-    case 2: typeStr = "Rainy"; break;
+    case 0: typeStr = "Clear"; break;
+    case 1: typeStr = "Cloud"; break;
+    case 2: typeStr = "Rain"; break;
+    case 3: typeStr = "Snow"; break;
     default: typeStr = "Unknown Weather";
   }
   String tempStr = String(temp);
 
-  lcd.print(typeStr + " " + tempStr);
+  lcd.setCursor(0,0);
+  lcd.print(typeStr);
+  lcd.setCursor(0,1);
+  lcd.print(tempStr+" C");
 }
 
 void setup() {
   // put your setup code here, to run once:
+  lcd.begin(8, 2);
   lcd.setContrast(30);            // コントラスト設定
-  lcd.print("hello, world!");
+////  lcd.print("hello, world!");
+//  lcd.setCursor(0,1);
+//  lcd.print("hemi!");
 }
 
 unsigned long prev_time = 0;
@@ -41,6 +48,7 @@ void loop() {
   // Receive first
   decode_results  results;        // Somewhere to store the results
 
+  unsigned long prev_data = 0;
   while (irrecv.decode(&results)) {  // Grab an IR code
     dumpInfo(&results);           // Output the results
     dumpRaw(&results);            // Output the results in RAW format
@@ -48,8 +56,15 @@ void loop() {
     Serial.println("");           // Blank line between entries
     irrecv.resume();              // Prepare for the next value
 
+
     if(results.decode_type == NEC) {
-      displayWeatherData(results.value);
+      Serial.print("Detected Signal!: ");
+      if(prev_data != results.value) {
+        prev_data = results.value;
+        Serial.println(results.value);
+        displayWeatherData(results.value);        
+      }
+//      displayWeatherData(0254);
     }
   }
 

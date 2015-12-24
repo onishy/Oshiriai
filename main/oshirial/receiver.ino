@@ -117,7 +117,7 @@ void  dumpCode (decode_results *results)
   }
 
   // End declaration
-  Serial.print("};");  // 
+  Serial.print("};");  //
 
   // Comment
   Serial.print("  // ");
@@ -150,11 +150,11 @@ int decodeString(unsigned long* signal, unsigned long** decoded, int *len)
   unsigned long *data_raw = (unsigned long*)calloc(100, sizeof(unsigned long));
   unsigned char *temp = (unsigned char*)data_raw;
   int i = 0;
-  
+
   while(temp[i] < '{' && i < 100) { i++; }
 
   if(i == 100) {
-    return -1;   
+    return -1;
   }
   *len = i;
   *decoded = (unsigned long*) calloc(*len, sizeof(unsigned long));
@@ -163,6 +163,6 @@ int decodeString(unsigned long* signal, unsigned long** decoded, int *len)
   }
 
   free(data_raw);
-  
+
   return *len;
 }
