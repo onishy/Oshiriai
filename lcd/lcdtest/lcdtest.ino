@@ -15,7 +15,7 @@ IRrecv irrecv(recvPin);
 void displayWeatherData(unsigned long data)
 {
   int type = data / 1000;
-  int temp = data % 1000;
+  int temp = (data % 1000) / 10.0;
 
   String typeStr;
   switch(type) {
