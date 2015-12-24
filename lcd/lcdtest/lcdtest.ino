@@ -43,6 +43,7 @@ void setup() {
 }
 
 unsigned long prev_time = 0;
+unsigned long set_time = 0;
 void loop() {
   // put your main code here, to run repeatedly:
   // Receive first
@@ -62,7 +63,8 @@ void loop() {
       if(prev_data != results.value) {
         prev_data = results.value;
         Serial.println(results.value);
-        displayWeatherData(results.value);        
+        displayWeatherData(results.value);
+        set_time = millis();     
       }
 //      displayWeatherData(0254);
     }
@@ -72,6 +74,14 @@ void loop() {
     prev_time = millis();
     irsend.sendNEC(111, 32);
     irrecv.enableIRIn();
+  }
+
+  if(millis() > set_time + 2000) {
+    prev_data = 0;
+  }
+  if(millis() > set_time + 5000) {
+    prev_data = 0;
+    lcd.clear();
   }
 
 }

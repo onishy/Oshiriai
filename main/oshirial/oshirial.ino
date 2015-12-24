@@ -22,6 +22,7 @@ void setup() {
 }
 
 unsigned long prev_time = 0;
+unsigned long last_received_disp = 0;
 void loop() {
   // Receive first
   decode_results  results;        // Somewhere to store the results
@@ -38,10 +39,10 @@ void loop() {
     } else if(results.decode_type == NEC) {
       if(results.value == 111) {
         unsigned long data = getWeatherInfo();
-//        for(int i = 0; i < 3; i++) {
         irsend.sendNEC(data, 32);
         delay(500);        
-//        }
+        irrecv.enableIRIn();
+        last_received_disp = millis();
       }
     }
   }
@@ -53,7 +54,16 @@ void loop() {
 //    Serial.println(diff);   // show the sensor's value on the terminal
   
     if(diff > threshold){
-      // Serial.println("Wink detected!");
+      Serial.println("Wink detected!");
+
+//      if(last_received_disp+1000 > millis()) {
+//        unsigned long data = getWeatherInfo();
+//        for(int i = 0; i < 3; i++) {
+//          irsend.sendNEC(data, 32);
+//          delay(500);        
+//        }        
+//      }
+      
       for(int i = 0; i < 5; i++) {
         irsend.sendSony(3310209325, 32);
         delay(500);
