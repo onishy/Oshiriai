@@ -21,7 +21,6 @@ void setup() {
   irrecv.enableIRIn();  // Start the receiver
 }
 
-int wait_cnt = 0;
 unsigned long prev_time = 0;
 void loop() {
   // Receive first
@@ -34,7 +33,17 @@ void loop() {
     Serial.println("");           // Blank line between entries
     irrecv.resume();              // Prepare for the next value
 
-    sendWireless(&results);
+    if(results.decode_type == SONY) {
+      sendWireless(&results);    
+    } else if(results.decode_type == NEC) {
+      if(results.value == 111) {
+        unsigned long data = getWeatherInfo();
+        for(int i = 0; i < 3; i++) {
+          irsend.sendNEC(data, 32);
+          delay(500);        
+        }
+      }
+    }
   }
 
   if(millis() > prev_time + 1000) {

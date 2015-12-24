@@ -14,3 +14,9 @@ void wirelessComm(unsigned long value)
   
 }
 
+unsigned long getWeatherInfo()
+{
+  // test
+  return 3254;
+}
+
