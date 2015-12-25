@@ -1,5 +1,9 @@
 #include <IRremote.h>
 
+#if defined(__AVR_ATmega32U4__)
+#include <Mouse.h>
+#endif
+
 // wink detect
 int sensorPin = A0;    // select the input pin for the Photoreflector
 int sensorValueIn = 0;  // variable to store the value coming from the sensor
@@ -19,6 +23,8 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(9600);
   irrecv.enableIRIn();  // Start the receiver
+
+  pinMode(2,INPUT); // for mouse
 }
 
 unsigned long prev_time = 0;
@@ -63,6 +69,15 @@ void loop() {
 //          delay(500);        
 //        }        
 //      }
+
+#if defined(__AVR_ATmega32U4__)
+      if(digitalRead(2) == HIGH) {
+        Serial.println("Mouse Click!");
+        Mouse.begin();
+        Mouse.click();
+        Mouse.end();  
+      }
+#endif
       
       for(int i = 0; i < 5; i++) {
         irsend.sendSony(3310209325, 32);
