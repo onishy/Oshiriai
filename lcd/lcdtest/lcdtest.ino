@@ -23,6 +23,7 @@ void displayWeatherData(unsigned long data)
     case 1: typeStr = "Cloud"; break;
     case 2: typeStr = "Rain"; break;
     case 3: typeStr = "Snow"; break;
+    case 4: typeStr = "Mist"; break;
     default: typeStr = "Unknown Weather";
   }
   String tempStr = String(temp);
