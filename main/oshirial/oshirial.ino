@@ -65,7 +65,7 @@ void loop() {
 //    Serial.println(diff);   // show the sensor's value on the terminal
 
     if(diff > threshold){
-       Serial.println("Wink detected!");
+//       Serial.println("Wink detected!");
 
 //      if(last_received_disp+1000 > millis()) {
 //        unsigned long data = getWeatherInfo();
@@ -76,12 +76,12 @@ void loop() {
 //      }
 #if defined(__AVR_ATmega32U4__)
       if(digitalRead(2) == HIGH) {
-        Serial.println("Mouse Click!");
+//        Serial.println("Mouse Click!");
         Mouse.begin();
         Mouse.click();
         Mouse.end();  
       } else {
-        Serial.println("Send Sony!");
+//        Serial.println("Send Sony!");
         for(int i = 0; i < 5; i++) {
           irsend.sendSony(3310209325, 32);
           delay(500);
