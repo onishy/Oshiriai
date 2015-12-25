@@ -22,6 +22,7 @@ IRrecv irrecv(recvPin);
 
 XBee xbee = XBee();
 
+unsigned long my_number = 3240266604;
 
 void setup() {
   // put your setup code here, to run once:
@@ -29,7 +30,7 @@ void setup() {
   xbee.setSerial(Serial);
   irrecv.enableIRIn();  // Start the receiver
 
-  pinMode(2,INPUT); // for mouse
+  pinMode(2, INPUT); // for mouse
 }
 
 unsigned long prev_time = 0;
@@ -45,10 +46,10 @@ void loop() {
     //  Serial.println("");           // Blank line between entries
     irrecv.resume();              // Prepare for the next value
 
-    if(results.decode_type == SONY) {
+    if (results.decode_type == SONY) {
       sendWireless(&results);
-    } else if(results.decode_type == NEC) {
-      if(results.value == 111) {
+    } else if (results.decode_type == NEC) {
+      if (results.value == 111) {
         unsigned long data = getWeatherInfo();
         irsend.sendNEC(data, 32);
         delay(500);
@@ -58,39 +59,40 @@ void loop() {
     }
   }
 
-  if(millis() > prev_time + 1000) {
+  if (millis() > prev_time + 150) {
     prev_time = millis();
     sensorValueIn = analogRead(sensorPin);  // put the value from the sensor
     int diff = sensorValueIn - prev_sensorValueIn;
-//    Serial.println(diff);   // show the sensor's value on the terminal
+//    Serial.println(sensorValueIn);
+    //    Serial.println(diff);   // show the sensor's value on the terminal
 
-    if(diff > threshold){
-//       Serial.println("Wink detected!");
+    if (diff > threshold) {
+      //       Serial.println("Wink detected!");
 
-//      if(last_received_disp+1000 > millis()) {
-//        unsigned long data = getWeatherInfo();
-//        for(int i = 0; i < 3; i++) {
-//          irsend.sendNEC(data, 32);
-//          delay(500);
-//        }
-//      }
+      //      if(last_received_disp+1000 > millis()) {
+      //        unsigned long data = getWeatherInfo();
+      //        for(int i = 0; i < 3; i++) {
+      //          irsend.sendNEC(data, 32);
+      //          delay(500);
+      //        }
+      //      }
 #if defined(__AVR_ATmega32U4__)
-      if(digitalRead(2) == HIGH) {
-//        Serial.println("Mouse Click!");
+      if (digitalRead(2) == HIGH) {
+        //        Serial.println("Mouse Click!");
         Mouse.begin();
         Mouse.click();
-        Mouse.end();  
+        Mouse.end();
       } else {
-//        Serial.println("Send Sony!");
-        for(int i = 0; i < 5; i++) {
-          irsend.sendSony(3310209325, 32);
+        //        Serial.println("Send Sony!");
+        for (int i = 0; i < 5; i++) {
+          irsend.sendSony(my_number, 32);
           delay(500);
         }
-        irrecv.enableIRIn();      
+        irrecv.enableIRIn();
       }
 #else
-      for(int i = 0; i < 5; i++) {
-        irsend.sendSony(3310209325, 32);
+      for (int i = 0; i < 5; i++) {
+        irsend.sendSony(my_number, 32);
         delay(500);
       }
       irrecv.enableIRIn();

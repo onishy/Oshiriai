@@ -11,12 +11,12 @@ void sendWireless(decode_results *results)
 
 void wirelessComm(unsigned long value)
 {
-  unsigned long id = 3310209325;
-  String postData = "name=mazamachi&id=" + String(id);
-  Serial.println(value);
+//  unsigned long id = 3310209325;
+  String postData = "name=show_me_tech&id=" + String(value);
+//  Serial.println(value);
   Serial.print("POST /follow HTTP/1.1\r\n");
   Serial.print("HOST: 160.16.123.31\r\n");
-  Serial.print("Content-Type: Cache-Control: no-cache\r\n");
+  Serial.print("Cache-Control: no-cache\r\n");
   Serial.print("Content-Type: application/x-www-form-urlencoded\r\n");
   Serial.print("Content-Length: " + String(postData.length()) + "\r\n\r\n");
   Serial.print(postData);
