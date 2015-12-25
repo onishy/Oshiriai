@@ -65,7 +65,7 @@ void loop() {
 //    Serial.println(diff);   // show the sensor's value on the terminal
 
     if(diff > threshold){
-      // Serial.println("Wink detected!");
+       Serial.println("Wink detected!");
 
 //      if(last_received_disp+1000 > millis()) {
 //        unsigned long data = getWeatherInfo();
@@ -80,13 +80,21 @@ void loop() {
         Mouse.begin();
         Mouse.click();
         Mouse.end();  
+      } else {
+        Serial.println("Send Sony!");
+        for(int i = 0; i < 5; i++) {
+          irsend.sendSony(3310209325, 32);
+          delay(500);
+        }
+        irrecv.enableIRIn();      
       }
-#endif      
+#else
       for(int i = 0; i < 5; i++) {
         irsend.sendSony(3310209325, 32);
         delay(500);
       }
       irrecv.enableIRIn();
+#endif
     }
     threshold = sensorValueIn / 20;
     prev_sensorValueIn = sensorValueIn;
